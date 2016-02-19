@@ -6,7 +6,7 @@
 /*   By: pbondoer <pbondoer@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/02/19 15:07:35 by pbondoer          #+#    #+#             */
-/*   Updated: 2016/02/19 15:21:37 by pbondoer         ###   ########.fr       */
+/*   Updated: 2016/02/19 16:03:34 by pbondoer         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,9 @@ int		main(int argc, char **argv)
 	ft_putchar('\n');
 	while (get_next_line(fd, &line))
 	{
+		ft_putstr("\033[33m");
 		ft_putstr(line);
+		ft_putstr("\033[0m");
 		ft_putchar('\n');
 	}
 	ft_putstr("eof\n");
