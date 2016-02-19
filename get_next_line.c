@@ -6,7 +6,7 @@
 /*   By: pbondoer <pbondoer@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/02/16 19:11:50 by pbondoer          #+#    #+#             */
-/*   Updated: 2016/02/19 16:12:39 by pbondoer         ###   ########.fr       */
+/*   Updated: 2016/02/19 18:28:48 by pbondoer         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,67 +14,62 @@
 #include "get_next_line.h"
 #include <unistd.h>
 
+char	*get_append(t_gnl *gnl)
+{
+	int i;
+
+	i = 0;
+	while (gnl->i + i < gnl->count)
+	{
+		if (gnl->buf[gnl->i + i] == '\n')
+		{
+			i++;
+			break;
+		}
+		i++;
+	}
+	gnl->i += i;
+	return ft_strsub(gnl->buf, gnl->i - i, i - 1);
+}
+
 int get_next_line(int const fd, char **line)
 {
-	static char	*buf;
-	static int	count;
-	int			i;
-	char		*temp;
-	char		*append;
+	static t_gnl	*gnl;
+	char			*temp;
 
 	if (fd <= 0 || line == NULL)
 		return (-1);
-	if (buf == NULL)
+	if (gnl == NULL)
 	{
-		ft_putstr("allocating buff\n");
-		buf = (char *)ft_memalloc(sizeof(char) * BUFF_SIZE);
-		temp = ft_strnew(0);
+		gnl = (t_gnl *)ft_memalloc(sizeof(t_gnl));
+		gnl->buf = ft_strnew(BUFF_SIZE);
+		gnl->count = 0;
+		gnl->i = 0;
 	}
-	i = 0;
-	count = 0;
-	while (i == count)
+
+	temp = ft_strnew(0);
+	while (gnl->i <= gnl->count)
 	{
-		count = read(fd, buf, BUFF_SIZE);
-		if (count == 0)
+		if(gnl->i == gnl->count)
 		{
-			ft_putstr("reached eof\n");
-			return (0);
-		}
-		ft_putstr("\033[32m");
-		ft_putstr(buf);
-		ft_putchar('\n');
-		ft_putstr("\033[0m");
-		append = NULL;
-		i = 0;
-		while (i < count)
-		{
-			if (buf[i] == '\n')
+			gnl->count = read(fd, gnl->buf, BUFF_SIZE);
+			gnl->i = 0;
+			if (gnl->count == 0)
 			{
-				ft_putstr("\t\tappend set\n");
-				append = ft_strsub(buf, 0, i);
-				i++;
-				break;
+				return (0);
 			}
-			i++;
 		}
-		if (append == NULL)
-			append = buf;
-		temp = ft_strjoin(temp, append);
 
-		if (i == count)
+		while (gnl->i < gnl->count)
 		{
-			ft_putstr("\tno newline found, looping again\n");
-		}
-		else
-		{
-			ft_putstr("\tfound newline at pos ");
-			ft_putnbr(i);
-			ft_putchar('\n');
+			temp = ft_strjoin(temp, get_append(gnl));
+
+			if (gnl->i < gnl->count)
+			{
+				*line = temp;
+				return (1);
+			}
 		}
 	}
-
-	ft_putstr("got out of loop\n");
-
-	*line = temp;
-	return (1);
+	return (0);
 }
