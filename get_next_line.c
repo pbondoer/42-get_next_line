@@ -15,22 +15,21 @@
 char	*get_append(t_gnl *gnl)
 {
 	int i;
-	int n;
 
 	i = 0;
-	n = 0;
+	gnl->nl = 0;
 	while (gnl->i + i < gnl->count)
 	{
 		if (gnl->buf[gnl->i + i] == '\n')
 		{
-			n = 1;
+			gnl->nl = 1;
 			i++;
 			break;
 		}
 		i++;
 	}
 	gnl->i += i;
-	return ft_strsub(gnl->buf, gnl->i - i, i - n);
+	return ft_strsub(gnl->buf, gnl->i - i, i - gnl->nl);
 }
 
 int get_next_line(int const fd, char **line)
@@ -38,7 +37,7 @@ int get_next_line(int const fd, char **line)
 	static t_gnl	*gnl;
 	char			*temp;
 
-	if (fd <= 0 || line == NULL)
+	if (fd < 0 || line == NULL)
 		return (-1);
 	if (gnl == NULL)
 	{
@@ -53,37 +52,42 @@ int get_next_line(int const fd, char **line)
 	{
 		if(gnl->i == gnl->count)
 		{
-			ft_putstr("read new buffer\n");
+			// ft_putstr("read new buffer\n");
 			gnl->count = read(fd, gnl->buf, BUFF_SIZE);
 			if (gnl->count == -1)
 				return (-1);
 			gnl->i = 0;
 			if (gnl->count == 0)
 			{
-				ft_putstr("count 0, eof\n");
-				return (0);
+				// ft_putstr("count 0, eof\n");
+				if (gnl->nl == 0)
+				{
+					// ft_putstr("expected eof, joining and returning\n");
+					*line = ft_strjoin(temp, get_append(gnl));
+					return (1);
+				}
 			}
 		}
 
-		ft_putstr("[buffer]\n");
-		ft_putstr(&(gnl->buf[gnl->i]));
-		ft_putstr("\n[buffer]\n");
+		// ft_putstr("[buffer]\n");
+		// ft_putstr(&(gnl->buf[gnl->i]));
+		// ft_putstr("\n[buffer]\n");
 		while (gnl->i < gnl->count)
 		{
 			temp = ft_strjoin(temp, get_append(gnl));
-			ft_putstr("i = ");
-			ft_putnbr(gnl->i);
-			ft_putstr("; c = ");
-			ft_putnbr(gnl->count);
-			ft_putstr("\n");
-			if (gnl->i < gnl->count)
+			// ft_putstr("i = ");
+			// ft_putnbr(gnl->i);
+			// ft_putstr("; c = ");
+			// ft_putnbr(gnl->count);
+			// ft_putstr("\n");
+			if (gnl->nl)
 			{
-				ft_putstr("returning\n");
+				// ft_putstr("returning\n");
 				*line = temp;
 				return (1);
 			}
 		}
 	}
-	*line = temp;
-	return (1);
+
+	return (0);
 }
