@@ -6,7 +6,7 @@
 /*   By: pbondoer <pbondoer@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/02/16 19:11:50 by pbondoer          #+#    #+#             */
-/*   Updated: 2016/02/21 14:41:05 by pbondoer         ###   ########.fr       */
+/*   Updated: 2016/02/21 15:33:00 by pbondoer         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,12 +27,12 @@ char	*get_append(t_gnl *gnl)
 		{
 			gnl->nl = 1;
 			i++;
-			break;
+			break ;
 		}
 		i++;
 	}
 	gnl->i += i;
-	return ft_strsub(gnl->buf, gnl->i - i, i - gnl->nl);
+	return (ft_strsub(gnl->buf, gnl->i - i, i - gnl->nl));
 }
 
 t_gnl	*get_gnl(t_list **lst, int fd)
@@ -60,38 +60,60 @@ t_gnl	*get_gnl(t_list **lst, int fd)
 	return ((t_gnl *)(temp->content));
 }
 
-void	del_one_gnl(void *ptr, size_t size)
+void	del_gnl(t_list **lst, int fd, char **str)
 {
 	t_gnl	*gnl;
-
-	(void)size;
-	gnl = (t_gnl *)ptr;
-	ft_memdel((void **)&(gnl->buf));
-	ft_memdel(&ptr);
-}
-
-void	del_gnl(t_list **lst, int fd)
-{
-	t_gnl *gnl;
-	t_list **temp;
+	t_list	**temp;
+	t_list	*ptr;
 
 	temp = lst;
 	while (*temp)
 	{
 		gnl = (t_gnl *)((*temp)->content);
 		if (gnl->fd == fd)
-			break;
+			break ;
 		*temp = ((*temp)->next);
-	}	
+	}
 	if (*temp)
-		ft_lstdel(temp, &del_one_gnl);
+	{
+		ptr = (*temp)->next;
+		ft_strdel(&(gnl->buf));
+		ft_memdel((void **)&gnl);
+		ft_memdel((void **)temp);
+		*temp = ptr;
+	}
+	ft_strdel(str);
 }
 
-int get_next_line(int const fd, char **line)
+int		read_buffer(t_gnl *gnl, t_list **lst, char **temp, char **line)
+{
+	if (gnl->i == gnl->count)
+	{
+		gnl->count = read(gnl->fd, gnl->buf, BUFF_SIZE);
+		if (gnl->count == -1)
+		{
+			del_gnl(lst, gnl->fd, temp);
+			return (-1);
+		}
+		gnl->i = 0;
+		if (gnl->count == 0)
+		{
+			if (gnl->nl == 0)
+			{
+				*line = *temp;
+				return (1);
+			}
+		}
+	}
+	return (0);
+}
+
+int		get_next_line(int const fd, char **line)
 {
 	static t_list	*lst;
 	t_gnl			*gnl;
 	char			*temp;
+	int				ret;
 
 	if (fd < 0 || line == NULL)
 		return (-1);
@@ -99,25 +121,8 @@ int get_next_line(int const fd, char **line)
 	temp = ft_strnew(0);
 	while (gnl->count > 0)
 	{
-		if(gnl->i == gnl->count)
-		{
-			gnl->count = read(fd, gnl->buf, BUFF_SIZE);
-			if (gnl->count == -1)
-			{
-				del_gnl(&lst, fd);
-				ft_strdel(&temp);
-				return (-1);
-			}
-			gnl->i = 0;
-			if (gnl->count == 0)
-			{
-				if (gnl->nl == 0)
-				{
-					*line = temp;
-					return (1);
-				}
-			}
-		}
+		if ((ret = read_buffer(gnl, &lst, &temp, line)) != 0)
+			return (ret);
 		while (gnl->i < gnl->count)
 		{
 			temp = ft_strmerge(temp, get_append(gnl));
@@ -128,7 +133,6 @@ int get_next_line(int const fd, char **line)
 			}
 		}
 	}
-	ft_strdel(&temp);
-	del_gnl(&lst, fd);
+	del_gnl(&lst, fd, &temp);
 	return (0);
 }
