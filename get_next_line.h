@@ -6,7 +6,7 @@
 /*   By: pbondoer <pbondoer@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/02/16 19:11:56 by pbondoer          #+#    #+#             */
-/*   Updated: 2016/02/21 11:44:01 by pbondoer         ###   ########.fr       */
+/*   Updated: 2016/02/21 15:11:36 by pbondoer         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,5 +22,5 @@ typedef struct	s_gnl
 	int			nl;
 	int			fd;
 }				t_gnl;
-int get_next_line(int const fd, char **line);
+int				get_next_line(int const fd, char **line);
 #endif
