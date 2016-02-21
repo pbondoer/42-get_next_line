@@ -39,12 +39,14 @@ int get_next_line(int const fd, char **line)
 
 	if (fd < 0 || line == NULL)
 		return (-1);
-	if (gnl == NULL)
+	if (gnl == NULL || gnl->fd != fd)
 	{
+		// ft_putstr("allocating new gnl\n");
 		gnl = (t_gnl *)ft_memalloc(sizeof(t_gnl));
 		gnl->buf = ft_strnew(BUFF_SIZE);
 		gnl->count = BUFF_SIZE;
 		gnl->i = BUFF_SIZE;
+		gnl->fd = fd;
 	}
 
 	temp = ft_strnew(0);
@@ -63,7 +65,7 @@ int get_next_line(int const fd, char **line)
 				if (gnl->nl == 0)
 				{
 					// ft_putstr("expected eof, joining and returning\n");
-					*line = ft_strjoin(temp, get_append(gnl));
+					*line = temp;
 					return (1);
 				}
 			}
@@ -75,14 +77,9 @@ int get_next_line(int const fd, char **line)
 		while (gnl->i < gnl->count)
 		{
 			temp = ft_strjoin(temp, get_append(gnl));
-			// ft_putstr("i = ");
-			// ft_putnbr(gnl->i);
-			// ft_putstr("; c = ");
-			// ft_putnbr(gnl->count);
-			// ft_putstr("\n");
 			if (gnl->nl)
 			{
-				// ft_putstr("returning\n");
+				// ft_putstr("returning 1\n");
 				*line = temp;
 				return (1);
 			}
