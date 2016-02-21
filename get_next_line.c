@@ -11,6 +11,7 @@
 #include "libft.h"
 #include "get_next_line.h"
 #include <unistd.h>
+#include <stdio.h>
 
 char	*get_append(t_gnl *gnl)
 {
@@ -32,59 +33,97 @@ char	*get_append(t_gnl *gnl)
 	return ft_strsub(gnl->buf, gnl->i - i, i - gnl->nl);
 }
 
+t_gnl	*get_gnl(t_list **lst, int fd)
+{
+	t_gnl	*gnl;
+	t_list	*temp;
+
+	temp = *lst;
+	while (temp)
+	{
+		gnl = (t_gnl *)(temp->content);
+		if (gnl->fd == fd)
+			return (gnl);
+		temp = temp->next;
+	}
+	gnl = (t_gnl *)ft_memalloc(sizeof(t_gnl));
+	gnl->buf = ft_strnew(BUFF_SIZE);
+	gnl->count = BUFF_SIZE;
+	gnl->i = BUFF_SIZE;
+	gnl->fd = fd;
+	gnl->nl = 1;
+	temp = ft_lstnew(gnl, sizeof(t_gnl));
+	ft_lstadd(lst, temp);
+	return ((t_gnl *)(temp->content));
+}
+
+void	del_one_gnl(void *ptr, size_t size)
+{
+	t_gnl	*gnl;
+
+	(void)size;
+	gnl = (t_gnl *)ptr;
+	ft_memdel((void **)&(gnl->buf));
+	ft_memdel(&ptr);
+}
+
+void	del_gnl(t_list **lst, int fd)
+{
+	t_gnl *gnl;
+	t_list **temp;
+
+	temp = lst;
+	while (*temp)
+	{
+		gnl = (t_gnl *)((*temp)->content);
+		if (gnl->fd == fd)
+			break;
+		*temp = ((*temp)->next);
+	}
+	if (*temp)
+		ft_lstdel(temp, &del_one_gnl);
+}
+
 int get_next_line(int const fd, char **line)
 {
-	static t_gnl	*gnl;
+	static t_list	*lst;
+	t_gnl			*gnl;
 	char			*temp;
 
 	if (fd < 0 || line == NULL)
 		return (-1);
-	if (gnl == NULL || gnl->fd != fd)
-	{
-		// ft_putstr("allocating new gnl\n");
-		gnl = (t_gnl *)ft_memalloc(sizeof(t_gnl));
-		gnl->buf = ft_strnew(BUFF_SIZE);
-		gnl->count = BUFF_SIZE;
-		gnl->i = BUFF_SIZE;
-		gnl->fd = fd;
-	}
-
+	gnl = get_gnl(&lst, fd);
 	temp = ft_strnew(0);
 	while (gnl->count > 0)
 	{
 		if(gnl->i == gnl->count)
 		{
-			// ft_putstr("read new buffer\n");
 			gnl->count = read(fd, gnl->buf, BUFF_SIZE);
 			if (gnl->count == -1)
+			{
+				del_gnl(&lst, fd);
 				return (-1);
+			}
 			gnl->i = 0;
 			if (gnl->count == 0)
 			{
-				// ft_putstr("count 0, eof\n");
 				if (gnl->nl == 0)
 				{
-					// ft_putstr("expected eof, joining and returning\n");
 					*line = temp;
 					return (1);
 				}
 			}
 		}
-
-		// ft_putstr("[buffer]\n");
-		// ft_putstr(&(gnl->buf[gnl->i]));
-		// ft_putstr("\n[buffer]\n");
 		while (gnl->i < gnl->count)
 		{
 			temp = ft_strjoin(temp, get_append(gnl));
 			if (gnl->nl)
 			{
-				// ft_putstr("returning 1\n");
 				*line = temp;
 				return (1);
 			}
 		}
 	}
-
+	del_gnl(&lst, fd);
 	return (0);
 }
