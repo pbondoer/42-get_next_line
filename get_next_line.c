@@ -1,10 +1,12 @@
 /* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
 /*   get_next_line.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: pbondoer <pbondoer@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/02/16 19:11:50 by pbondoer          #+#    #+#             */
-/*   Updated: 2016/02/19 18:40:15 by pbondoer         ###   ########.fr       */
+/*   Updated: 2016/02/21 14:30:11 by pbondoer         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,6 +55,7 @@ t_gnl	*get_gnl(t_list **lst, int fd)
 	gnl->fd = fd;
 	gnl->nl = 1;
 	temp = ft_lstnew(gnl, sizeof(t_gnl));
+	ft_memdel((void **)&gnl);
 	ft_lstadd(lst, temp);
 	return ((t_gnl *)(temp->content));
 }
@@ -79,7 +82,7 @@ void	del_gnl(t_list **lst, int fd)
 		if (gnl->fd == fd)
 			break;
 		*temp = ((*temp)->next);
-	}
+	}	
 	if (*temp)
 		ft_lstdel(temp, &del_one_gnl);
 }
@@ -102,6 +105,7 @@ int get_next_line(int const fd, char **line)
 			if (gnl->count == -1)
 			{
 				del_gnl(&lst, fd);
+				ft_strdel(&temp);
 				return (-1);
 			}
 			gnl->i = 0;
@@ -109,6 +113,8 @@ int get_next_line(int const fd, char **line)
 			{
 				if (gnl->nl == 0)
 				{
+					if (*line)
+						ft_strdel(line);
 					*line = temp;
 					return (1);
 				}
@@ -116,14 +122,19 @@ int get_next_line(int const fd, char **line)
 		}
 		while (gnl->i < gnl->count)
 		{
-			temp = ft_strjoin(temp, get_append(gnl));
+			temp = ft_strmerge(temp, get_append(gnl));
 			if (gnl->nl)
 			{
+				if (*line)
+					ft_strdel(line);
 				*line = temp;
 				return (1);
 			}
 		}
 	}
+	if (*line)
+		ft_strdel(line);
+	ft_strdel(&temp);
 	del_gnl(&lst, fd);
 	return (0);
 }
