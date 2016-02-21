@@ -6,7 +6,7 @@
 /*   By: pbondoer <pbondoer@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/02/16 19:11:50 by pbondoer          #+#    #+#             */
-/*   Updated: 2016/02/21 14:30:11 by pbondoer         ###   ########.fr       */
+/*   Updated: 2016/02/21 14:41:05 by pbondoer         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -113,8 +113,6 @@ int get_next_line(int const fd, char **line)
 			{
 				if (gnl->nl == 0)
 				{
-					if (*line)
-						ft_strdel(line);
 					*line = temp;
 					return (1);
 				}
@@ -125,15 +123,11 @@ int get_next_line(int const fd, char **line)
 			temp = ft_strmerge(temp, get_append(gnl));
 			if (gnl->nl)
 			{
-				if (*line)
-					ft_strdel(line);
 				*line = temp;
 				return (1);
 			}
 		}
 	}
-	if (*line)
-		ft_strdel(line);
 	ft_strdel(&temp);
 	del_gnl(&lst, fd);
 	return (0);
