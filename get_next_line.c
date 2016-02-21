@@ -6,14 +6,13 @@
 /*   By: pbondoer <pbondoer@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/02/16 19:11:50 by pbondoer          #+#    #+#             */
-/*   Updated: 2016/02/21 15:33:00 by pbondoer         ###   ########.fr       */
+/*   Updated: 2016/02/21 16:48:17 by pbondoer         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 #include "get_next_line.h"
 #include <unistd.h>
-#include <stdio.h>
 
 char	*get_append(t_gnl *gnl)
 {
