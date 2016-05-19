@@ -18,17 +18,12 @@ ft_strdel(&line); // You should free after you're done using your line
 // To read a whole file
 while (get_next_line(fd, &line))
 {
-	...
-	ft_strdel(&line); // Don't forget to free!
+	// process the line here, here we'll just output it
+	ft_putstr(line);
+	
+	// free the line to avoid leaking memory
+	ft_strdel(&line);
 }
 
 // GNL will automatically free appropriately whenever it reaches EOF.
 ```
-
-## A note for (future) 42 students
-Hey, hey! This project might seem hard, but get_next_line is not really all that
-hard when you compare it to what's coming up next. Try and solve it for
-yourself! Take a step-by-step approach. I had trouble figuring some things out,
-but it worked well in the end!
-
-Good luck, and thanks for all the fish! ><>
